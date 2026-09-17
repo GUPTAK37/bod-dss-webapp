@@ -1,0 +1,3 @@
+# backend/dist/ is COMMITTED so DSS can `git pull` the built bundle without
+# running npm. This .gitkeep exists only so the empty folder is checked in
+# before the first `npm run build` populates it.

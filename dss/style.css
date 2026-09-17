@@ -1,0 +1,2 @@
+/* Intentionally empty — everything visual lives inside the FastAPI-served
+   SPA (see backend/dist/), embedded via the iframe in app.js. */

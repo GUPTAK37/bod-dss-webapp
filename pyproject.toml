@@ -1,0 +1,41 @@
+[project]
+name = "bod-dss-webapp"
+version = "0.1.0"
+description = "COVID-19 QCIT Burden-of-Disease dashboard — FastAPI + React on Dataiku DSS (STANDARD web app)"
+requires-python = ">=3.11"
+readme = "README.md"
+
+dependencies = [
+    # FastAPI runtime
+    "fastapi[standard]>=0.115",
+    "uvicorn[standard]>=0.30",
+    "pydantic>=2.6",
+    "python-dotenv>=1.0",
+
+    # Data + charts (reused from bod_app library folder)
+    "pandas>=2.2",
+    "plotly>=5.22",
+    "snowflake-connector-python[pandas]>=3.10",
+
+    # Optional: only imported when running inside DSS or when a user opts
+    # into the DSSClient path locally (DSS_HOST + DSS_API_KEY).
+    # "dataikuapi>=13.0.0",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.6",
+    "pytest>=8.0",
+    "httpx>=0.27",           # for FastAPI TestClient
+]
+
+[tool.uv]
+package = false
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+ignore = ["E501"]
