@@ -14,8 +14,7 @@
     "isolatedModules": true,
     "skipLibCheck": true,
     "noEmit": true,
-    "allowSyntheticDefaultImports": true,
-    "types": ["node"]
+    "allowSyntheticDefaultImports": true
   },
   "include": ["src", "vite.config.ts"]
 }
