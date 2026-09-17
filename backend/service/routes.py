@@ -15,7 +15,7 @@ three separate blueprints in the flat `bod_webapp` layout:
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Request
 from pydantic import BaseModel
@@ -88,9 +88,9 @@ _DATA_GROUP = [
 
 
 class CascadeRequest(BaseModel):
-    granularity: str | None = "3"
-    selections: dict[str, list[str]] = {}
-    currents: dict[str, list[str]] = {}
+    granularity: Optional[str] = "3"
+    selections: Dict[str, List[str]] = {}
+    currents: Dict[str, List[str]] = {}
 
 
 @router.get("/filter-options")
@@ -134,7 +134,7 @@ def filter_cascade(body: CascadeRequest):
 
 
 @router.post("/hr-top7")
-def hr_top7(body: dict[str, Any]):
+def hr_top7(body: Dict[str, Any]):
     f = from_payload(body)
     try:
         df = run_query(*Q.q_s8_top7_list(f))
@@ -154,6 +154,6 @@ def hr_top7(body: dict[str, Any]):
 # ---------- Per-section chart + table --------------------------------------
 
 @router.post("/section/{sid}")
-def section(sid: str, body: dict[str, Any]):
+def section(sid: str, body: Dict[str, Any]):
     f = from_payload(body)
     return render_section(sid, f)
