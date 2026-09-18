@@ -517,7 +517,6 @@ body, .Select-control, .Select-menu-outer, .Dropdown-control {
 .section-sub-row {
     display: flex; flex-direction: column; align-items: center; gap: 2px;
     padding: 8px 14px; background: #FFFFFF;
-    border-bottom: 1px solid #E0E0E0;
 }
 
 /* -- Local filter row (S8/S9) — mirrors Tableau's per-worksheet filter shelf -- */
@@ -553,7 +552,6 @@ body, .Select-control, .Select-menu-outer, .Dropdown-control {
     display: flex; gap: 22px; justify-content: center;
     padding: 6px 14px 4px 14px;
     background: #FFFFFF;
-    border-bottom: 1px solid #EFEFEF;
 }
 .legend-item {
     display: flex; align-items: center; gap: 6px;
