@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import AppHeader from './components/AppHeader.jsx';
 import FilterPanel from './components/FilterPanel.jsx';
 import Section from './components/Section.jsx';
+import LoadingOverlay from './components/LoadingOverlay.jsx';
 import { SECTIONS } from './sections.config.js';
 import { DEFAULT_FILTERS } from './state/store.js';
 import { getFilterOptions, postFilterCascade, postHrTop7 } from './api';
@@ -9,14 +10,13 @@ import { getFilterOptions, postFilterCascade, postHrTop7 } from './api';
 /**
  * Root of the SPA.
  *
- * Data flow:
- *   1. On mount, hit /api/filter-options — populates every dropdown's option
- *      list, min/max dates, and available years.
- *   2. `filters` is the working state (mirrors bod_app's dcc.Store).
- *   3. Clicking "Apply Filters" bumps `filtersVersion`; every Section
- *      component `useEffect`s on that and re-fetches its data.
- *   4. Apply also fires a cascade (Only-Relevant Values) and an S8 Top-7
- *      refresh so downstream dropdown option lists follow the workbook.
+ * Loading state (surfaced via LoadingOverlay while Apply is running):
+ *   - `filtersPhase`: 'idle' | 'initial' | 'cascade' | 'sections'
+ *   - `sectionsPending`: Set of section ids currently fetching
+ * Together they drive the 3-step overlay:
+ *     1. Loading filter data
+ *     2. Refreshing filter options
+ *     3. Refreshing charts (N of 10)
  */
 export default function App() {
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
@@ -25,19 +25,39 @@ export default function App() {
   const [hrDyn, setHrDyn] = useState(null);
   const [filtersVersion, setFiltersVersion] = useState(0);
 
+  const [filtersPhase, setFiltersPhase] = useState('initial');
+  const [sectionsPending, setSectionsPending] = useState(new Set());
+
+  const notifySectionStart = useCallback((sid) => {
+    setSectionsPending((prev) => {
+      const next = new Set(prev);
+      next.add(sid);
+      return next;
+    });
+  }, []);
+  const notifySectionEnd = useCallback((sid) => {
+    setSectionsPending((prev) => {
+      const next = new Set(prev);
+      next.delete(sid);
+      return next;
+    });
+  }, []);
+
   useEffect(() => {
+    setFiltersPhase('initial');
     getFilterOptions()
       .then((r) => {
         setDateExtents({ min_date: r.min_date, max_date: r.max_date });
         setOptions({ ...(r.filters || {}), years: r.years || [] });
       })
-      .catch((e) => console.error('filter-options failed', e));
+      .catch((e) => console.error('filter-options failed', e))
+      .finally(() => setFiltersPhase('idle'));
   }, []);
 
   const onApply = async () => {
+    setFiltersPhase('cascade');
     // 1. Cascade update for downstream filter option lists.
     try {
-      const currents = {}; // We don't currently track __ALL__ sentinels; leave empty.
       const selections = {
         'f-age-group': filters.age_group,
         'f-gender':    filters.patient_gender,
@@ -52,7 +72,7 @@ export default function App() {
         'p-granularity-value': filters.granularity_value,
       };
       const cascade = await postFilterCascade({
-        granularity: filters.granularity, selections, currents,
+        granularity: filters.granularity, selections, currents: {},
       });
       setOptions((prev) => {
         const next = { ...prev };
@@ -68,16 +88,37 @@ export default function App() {
     } catch (e) { console.warn('hr-top7 failed', e); }
 
     // 3. Trigger every section to refetch.
+    setFiltersPhase('sections');
+    setSectionsPending(new Set(SECTIONS.map((s) => s.id)));
     setFiltersVersion((v) => v + 1);
   };
+
+  // When all sections have reported back, drop the overlay.
+  useEffect(() => {
+    if (filtersPhase === 'sections' && sectionsPending.size === 0) {
+      setFiltersPhase('idle');
+    }
+  }, [filtersPhase, sectionsPending]);
 
   const onReset = () => {
     setFilters(DEFAULT_FILTERS);
+    setFiltersPhase('sections');
+    setSectionsPending(new Set(SECTIONS.map((s) => s.id)));
     setFiltersVersion((v) => v + 1);
   };
 
+  // Build the overlay's 3-step spec.
+  const totalSections = SECTIONS.length;
+  const doneSections = totalSections - sectionsPending.size;
+  const overlay = buildOverlaySteps(filtersPhase, doneSections, totalSections);
+
   return (
     <div>
+      <LoadingOverlay
+        visible={filtersPhase !== 'idle'}
+        title={filtersPhase === 'initial' ? 'Opening workbook' : 'Applying filters'}
+        steps={overlay}
+      />
       <AppHeader />
       <FilterPanel
         filters={filters}
@@ -97,9 +138,39 @@ export default function App() {
             options={options}
             hrDyn={hrDyn}
             setFilters={setFilters}
+            onLoadStart={notifySectionStart}
+            onLoadEnd={notifySectionEnd}
           />
         ))}
       </div>
     </div>
   );
+}
+
+function buildOverlaySteps(phase, done, total) {
+  if (phase === 'initial') {
+    return [
+      { label: 'Loading filter options', status: 'active' },
+      { label: 'Refreshing charts',       status: 'pending' },
+    ];
+  }
+  // Apply-flow: cascade → sections
+  const cascadeStatus =
+    phase === 'cascade' ? 'active'
+    : phase === 'sections' ? 'done'
+    : 'pending';
+  const sectionsStatus =
+    phase === 'sections'
+      ? (done >= total ? 'done' : 'active')
+      : 'pending';
+
+  const chartsLabel =
+    phase === 'sections' && total > 0
+      ? `Refreshing charts (${done} / ${total})`
+      : 'Refreshing charts';
+
+  return [
+    { label: 'Refreshing filter options', status: cascadeStatus },
+    { label: chartsLabel,                 status: sectionsStatus },
+  ];
 }

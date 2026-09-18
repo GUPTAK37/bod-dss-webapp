@@ -9,7 +9,7 @@ import { fetchSection } from '../api';
  * header pills (Time Period / Window / #Episodes), Plotly chart, HTML table.
  * Fires POST /api/section/<id> whenever `filtersVersion` changes.
  */
-export default function Section({ config, filters, filtersVersion, options, hrDyn, setFilters }) {
+export default function Section({ config, filters, filtersVersion, options, hrDyn, setFilters, onLoadStart, onLoadEnd }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -18,10 +18,14 @@ export default function Section({ config, filters, filtersVersion, options, hrDy
     if (filtersVersion === 0) return; // wait for the first Apply
     let alive = true;
     setLoading(true); setError(null);
+    onLoadStart?.(config.id);
     fetchSection(config.id, filters)
       .then((r) => { if (alive) setData(r); })
       .catch((e) => { if (alive) setError(String(e.message || e)); })
-      .finally(() => { if (alive) setLoading(false); });
+      .finally(() => {
+        if (alive) setLoading(false);
+        onLoadEnd?.(config.id);
+      });
     return () => { alive = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filtersVersion]);
