@@ -195,9 +195,15 @@ function arraysEqual(a, b) {
 }
 
 // ---- styles ---------------------------------------------------------------
+//
+// IMPORTANT: `.ms-body` in tableau_theme.css is the SOLE scroll container
+// (max-height: 300px, overflow-y: auto). The search bar stays visible via
+// `position: sticky; top: 0` — same trick used here for the Apply/Cancel
+// row (`position: sticky; bottom: 0`).
+//
+// Flex layout on `.ms-pop` doesn't work because the CSS forces
+// `.ms-chk { overflow: visible !important }` on all descendants.
 
-// Overall popover: bounded height, flex column so search + list + buttons
-// stack; only the middle list scrolls.
 const popStyle = {
   position: 'absolute',
   top: '100%',
@@ -207,37 +213,32 @@ const popStyle = {
   border: '1px solid #B8B8B8',
   boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
   minWidth: 220,
-  maxHeight: 360,
-  display: 'flex',
-  flexDirection: 'column',
 };
 
-const bodyStyle = {
-  display: 'flex',
-  flexDirection: 'column',
-  minHeight: 0,             // required so the inner flex child can scroll
-  flex: 1,
-};
-
-const stickyTopStyle = {
-  flexShrink: 0,            // search box stays at the top
-};
-
-const scrollListStyle = {
-  flex: 1,
-  overflow: 'auto',
-  minHeight: 80,
-};
+// No layout overrides — let .ms-body use its own CSS (max-height 300, scroll).
+const bodyStyle = undefined;
+const stickyTopStyle = undefined;
+const scrollListStyle = undefined;
 
 const rowStyle = { display: 'block', padding: '2px 4px' };
 
 const btnRowStyle = {
-  flexShrink: 0,            // buttons pinned at the bottom
-  display: 'flex', gap: 6, justifyContent: 'flex-end',
-  padding: '6px 4px 2px 4px',
+  // Pin the button row to the bottom of the scroll container.
+  position: 'sticky',
+  bottom: 0,
+  zIndex: 10,
+  background: '#FFFFFF',
+  display: 'flex',
+  gap: 6,
+  justifyContent: 'flex-end',
+  padding: '6px 4px',
   borderTop: '1px solid #E5E5E5',
   marginTop: 4,
-  background: '#FFFFFF',
+  // Nudge back to line up with the .ms-body padding (4px 6px).
+  marginLeft: -6,
+  marginRight: -6,
+  paddingLeft: 6,
+  paddingRight: 6,
 };
 
 const applyBtnStyle = {
