@@ -119,6 +119,10 @@ const resetBtnStyle = {
   minHeight: 56,
   fontSize: 22,
   lineHeight: 1,
+  background: 'transparent',
+  color: '#000',
+  border: '1px solid #B8B8B8',
+  cursor: 'pointer',
 };
 
 function buildMonthOptions(extents) {
