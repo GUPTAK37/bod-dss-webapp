@@ -125,7 +125,7 @@ export default function MultiSelect({
         </button>
         {open && (
           <div className="ms-pop" style={popStyle}>
-            <div className="ms-body">
+            <div className="ms-body" style={bodyStyle}>
               {useSearch && (
                 <input
                   type="search"
@@ -134,9 +134,10 @@ export default function MultiSelect({
                   autoComplete="off"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
+                  style={stickyTopStyle}
                 />
               )}
-              <div className="ms-chk" style={{ maxHeight: 240, overflow: 'auto' }}>
+              <div className="ms-chk" style={scrollListStyle}>
                 <label className="ms-checkbox-label" style={rowStyle}>
                   <input
                     type="checkbox"
@@ -195,6 +196,8 @@ function arraysEqual(a, b) {
 
 // ---- styles ---------------------------------------------------------------
 
+// Overall popover: bounded height, flex column so search + list + buttons
+// stack; only the middle list scrolls.
 const popStyle = {
   position: 'absolute',
   top: '100%',
@@ -204,14 +207,37 @@ const popStyle = {
   border: '1px solid #B8B8B8',
   boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
   minWidth: 220,
+  maxHeight: 360,
+  display: 'flex',
+  flexDirection: 'column',
 };
+
+const bodyStyle = {
+  display: 'flex',
+  flexDirection: 'column',
+  minHeight: 0,             // required so the inner flex child can scroll
+  flex: 1,
+};
+
+const stickyTopStyle = {
+  flexShrink: 0,            // search box stays at the top
+};
+
+const scrollListStyle = {
+  flex: 1,
+  overflow: 'auto',
+  minHeight: 80,
+};
+
 const rowStyle = { display: 'block', padding: '2px 4px' };
 
 const btnRowStyle = {
+  flexShrink: 0,            // buttons pinned at the bottom
   display: 'flex', gap: 6, justifyContent: 'flex-end',
   padding: '6px 4px 2px 4px',
   borderTop: '1px solid #E5E5E5',
   marginTop: 4,
+  background: '#FFFFFF',
 };
 
 const applyBtnStyle = {
