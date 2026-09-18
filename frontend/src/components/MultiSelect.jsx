@@ -1,17 +1,20 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
-const ALL = '__ALL__';
+const NONE_SENTINEL = '__NONE__';
 
 /**
  * Tableau-style multi-select popover.
- * Ports the (All)-sentinel, "(Multiple Values)" text, and search-filter
- * behavior from the JS clientside callbacks in bod_app/layouts/bod.py.
  *
- * `options`: string[] (the "real" option list — the (All) row is prepended
- *   internally).
- * `value`: string[] — the *SQL-facing* value list. Empty [] means "no filter"
- *   (i.e. (All) is checked).
- * `onChange`: called with the new SQL-facing value list.
+ * Value semantics (SQL-facing, passed to backend `_in_clause`):
+ *   - `[]`               → (All) — every option, no WHERE clause added
+ *   - `['__NONE__']`     → (None) — explicit "match nothing" (produces
+ *                          `col IN ('__NONE__')` server-side, which is
+ *                          intentionally an empty result set)
+ *   - `[a, b]`           → partial — `col IN (a, b)`
+ *
+ * The (All) checkbox toggles between the first two states. Clicking any
+ * individual item transitions to partial (or back to All when every real
+ * item is checked, or to None when every real item is unchecked).
  */
 export default function MultiSelect({
   id,
@@ -39,22 +42,27 @@ export default function MultiSelect({
   const total = opts.length;
   const useSearch = searchable == null ? total > 10 : !!searchable;
 
-  // Selected set (SQL-facing = empty means (All)).
+  // Derive the current visual mode from the value.
+  const isAllMode = !value || value.length === 0;
+  const isNoneMode = Array.isArray(value)
+    && value.length === 1
+    && value[0] === NONE_SENTINEL;
+
   const selectedSet = useMemo(() => {
-    if (!value || value.length === 0) return new Set(opts); // (All)
+    if (isAllMode) return new Set(opts);
+    if (isNoneMode) return new Set();
     return new Set(value);
-  }, [value, opts]);
+  }, [isAllMode, isNoneMode, value, opts]);
 
-  const allChecked = selectedSet.size === total && total > 0;
-  const noneChecked = selectedSet.size === 0;
+  const allChecked = isAllMode;
 
-  // Button text.
   const btnText = useMemo(() => {
-    if (allChecked || (value && value.length === 0)) return '(All)';
-    if (selectedSet.size === 0) return '(None)';
+    if (isAllMode) return '(All)';
+    if (isNoneMode || selectedSet.size === 0) return '(None)';
+    if (selectedSet.size === total && total > 0) return '(All)';
     if (selectedSet.size === 1) return String([...selectedSet][0]);
     return '(Multiple Values)';
-  }, [allChecked, selectedSet, value]);
+  }, [isAllMode, isNoneMode, selectedSet, total]);
 
   const filtered = useMemo(() => {
     if (!query.trim()) return opts;
@@ -63,17 +71,28 @@ export default function MultiSelect({
   }, [opts, query]);
 
   const toggleAll = () => {
-    if (allChecked) onChange([]);        // sql-facing [] == treat-as-all here == None visually
-    else onChange([]);                   // Same: SQL-facing (All) is []
+    if (allChecked) {
+      // Unchecking (All): visually uncheck every real item, and tell the
+      // backend to match nothing.
+      onChange([NONE_SENTINEL]);
+    } else {
+      // Checking (All): everything on, no filter applied.
+      onChange([]);
+    }
   };
 
   const setOne = (o, checked) => {
     const next = new Set(selectedSet);
     if (checked) next.add(o);
     else next.delete(o);
-    // Collapse to (All) when every real option is checked.
-    if (next.size === total) onChange([]);
-    else onChange([...next]);
+
+    if (next.size === total) {
+      onChange([]);                       // -> (All)
+    } else if (next.size === 0) {
+      onChange([NONE_SENTINEL]);          // -> (None)
+    } else {
+      onChange([...next]);                // -> partial
+    }
   };
 
   return (
@@ -107,7 +126,7 @@ export default function MultiSelect({
                   <input
                     type="checkbox"
                     className="ms-checkbox"
-                    checked={allChecked || (value && value.length === 0)}
+                    checked={allChecked}
                     onChange={toggleAll}
                   />
                   (All)
