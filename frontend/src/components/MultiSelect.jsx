@@ -3,18 +3,20 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 const NONE_SENTINEL = '__NONE__';
 
 /**
- * Tableau-style multi-select popover.
+ * Tableau-style multi-select popover with its OWN Apply / Cancel buttons.
  *
- * Value semantics (SQL-facing, passed to backend `_in_clause`):
- *   - `[]`               → (All) — every option, no WHERE clause added
- *   - `['__NONE__']`     → (None) — explicit "match nothing" (produces
- *                          `col IN ('__NONE__')` server-side, which is
- *                          intentionally an empty result set)
- *   - `[a, b]`           → partial — `col IN (a, b)`
+ * Behavior:
+ *   - Opening the popover snapshots the committed `value` into a local
+ *     draft. All checkbox interactions edit the draft only.
+ *   - **Apply** commits the draft to the parent (`onChange`), closes the
+ *     popover, and triggers a dashboard refresh.
+ *   - **Cancel** (or clicking outside) discards the draft and closes.
+ *   - No dashboard refetch fires until Apply is clicked.
  *
- * The (All) checkbox toggles between the first two states. Clicking any
- * individual item transitions to partial (or back to All when every real
- * item is checked, or to None when every real item is unchecked).
+ * SQL-facing value semantics (unchanged):
+ *   - `[]`               → (All)
+ *   - `['__NONE__']`     → (None) — match nothing
+ *   - `[a, b, ...]`      → partial
  */
 export default function MultiSelect({
   id,
@@ -28,8 +30,15 @@ export default function MultiSelect({
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
+  const [draft, setDraft] = useState(value || []);
   const ref = useRef(null);
 
+  // Whenever the popover opens, snapshot the currently-committed value.
+  useEffect(() => {
+    if (open) setDraft(value || []);
+  }, [open, value]);
+
+  // Close on outside click (treated as Cancel — draft is discarded).
   useEffect(() => {
     const onDoc = (e) => {
       if (open && ref.current && !ref.current.contains(e.target)) setOpen(false);
@@ -42,27 +51,31 @@ export default function MultiSelect({
   const total = opts.length;
   const useSearch = searchable == null ? total > 10 : !!searchable;
 
-  // Derive the current visual mode from the value.
-  const isAllMode = !value || value.length === 0;
-  const isNoneMode = Array.isArray(value)
+  // Derive draft mode.
+  const draftIsAll = !draft || draft.length === 0;
+  const draftIsNone = Array.isArray(draft)
+    && draft.length === 1
+    && draft[0] === NONE_SENTINEL;
+
+  const draftSet = useMemo(() => {
+    if (draftIsAll) return new Set(opts);
+    if (draftIsNone) return new Set();
+    return new Set(draft);
+  }, [draftIsAll, draftIsNone, draft, opts]);
+
+  // Committed-value → button text.
+  const committedIsAll = !value || value.length === 0;
+  const committedIsNone = Array.isArray(value)
     && value.length === 1
     && value[0] === NONE_SENTINEL;
 
-  const selectedSet = useMemo(() => {
-    if (isAllMode) return new Set(opts);
-    if (isNoneMode) return new Set();
-    return new Set(value);
-  }, [isAllMode, isNoneMode, value, opts]);
-
-  const allChecked = isAllMode;
-
   const btnText = useMemo(() => {
-    if (isAllMode) return '(All)';
-    if (isNoneMode || selectedSet.size === 0) return '(None)';
-    if (selectedSet.size === total && total > 0) return '(All)';
-    if (selectedSet.size === 1) return String([...selectedSet][0]);
+    if (committedIsAll) return '(All)';
+    if (committedIsNone) return '(None)';
+    if (value.length === 1) return String(value[0]);
+    if (value.length === total) return '(All)';
     return '(Multiple Values)';
-  }, [isAllMode, isNoneMode, selectedSet, total]);
+  }, [committedIsAll, committedIsNone, value, total]);
 
   const filtered = useMemo(() => {
     if (!query.trim()) return opts;
@@ -71,29 +84,31 @@ export default function MultiSelect({
   }, [opts, query]);
 
   const toggleAll = () => {
-    if (allChecked) {
-      // Unchecking (All): visually uncheck every real item, and tell the
-      // backend to match nothing.
-      onChange([NONE_SENTINEL]);
-    } else {
-      // Checking (All): everything on, no filter applied.
-      onChange([]);
-    }
+    if (draftIsAll) setDraft([NONE_SENTINEL]);
+    else setDraft([]);
   };
 
   const setOne = (o, checked) => {
-    const next = new Set(selectedSet);
+    const next = new Set(draftSet);
     if (checked) next.add(o);
     else next.delete(o);
-
-    if (next.size === total) {
-      onChange([]);                       // -> (All)
-    } else if (next.size === 0) {
-      onChange([NONE_SENTINEL]);          // -> (None)
-    } else {
-      onChange([...next]);                // -> partial
-    }
+    if (next.size === total) setDraft([]);
+    else if (next.size === 0) setDraft([NONE_SENTINEL]);
+    else setDraft([...next]);
   };
+
+  const handleApply = () => {
+    onChange(draft);
+    setOpen(false);
+  };
+
+  const handleCancel = () => {
+    setDraft(value || []);
+    setOpen(false);
+  };
+
+  // Enable Apply only when the draft differs from the committed value.
+  const dirty = !arraysEqual(draft, value);
 
   return (
     <div className="param-cell" ref={ref}>
@@ -121,12 +136,12 @@ export default function MultiSelect({
                   onChange={(e) => setQuery(e.target.value)}
                 />
               )}
-              <div className="ms-chk" style={{ maxHeight: 260, overflow: 'auto' }}>
+              <div className="ms-chk" style={{ maxHeight: 240, overflow: 'auto' }}>
                 <label className="ms-checkbox-label" style={rowStyle}>
                   <input
                     type="checkbox"
                     className="ms-checkbox"
-                    checked={allChecked}
+                    checked={draftIsAll}
                     onChange={toggleAll}
                   />
                   (All)
@@ -136,12 +151,30 @@ export default function MultiSelect({
                     <input
                       type="checkbox"
                       className="ms-checkbox"
-                      checked={selectedSet.has(o)}
+                      checked={draftSet.has(o)}
                       onChange={(e) => setOne(o, e.target.checked)}
                     />
                     {o}
                   </label>
                 ))}
+              </div>
+              <div style={btnRowStyle}>
+                <button type="button"
+                        disabled={!dirty}
+                        style={{ ...cancelBtnStyle,
+                                 ...(dirty ? {} : cancelBtnDisabledStyle) }}
+                        onClick={handleCancel}
+                        title={dirty
+                          ? 'Discard changes'
+                          : 'No changes to cancel'}>Cancel</button>
+                <button type="button"
+                        disabled={!dirty}
+                        style={{ ...applyBtnStyle,
+                                 ...(dirty ? {} : applyBtnDisabledStyle) }}
+                        onClick={handleApply}
+                        title={dirty
+                          ? 'Apply and refresh'
+                          : 'No changes to apply'}>Apply</button>
               </div>
             </div>
           </div>
@@ -150,6 +183,17 @@ export default function MultiSelect({
     </div>
   );
 }
+
+function arraysEqual(a, b) {
+  const A = a || [];
+  const B = b || [];
+  if (A.length !== B.length) return false;
+  const s = new Set(A);
+  for (const x of B) if (!s.has(x)) return false;
+  return true;
+}
+
+// ---- styles ---------------------------------------------------------------
 
 const popStyle = {
   position: 'absolute',
@@ -162,3 +206,29 @@ const popStyle = {
   minWidth: 220,
 };
 const rowStyle = { display: 'block', padding: '2px 4px' };
+
+const btnRowStyle = {
+  display: 'flex', gap: 6, justifyContent: 'flex-end',
+  padding: '6px 4px 2px 4px',
+  borderTop: '1px solid #E5E5E5',
+  marginTop: 4,
+};
+
+const applyBtnStyle = {
+  background: '#0000C9', color: 'white',
+  border: 'none', padding: '4px 12px',
+  fontSize: 11, fontWeight: 600,
+  cursor: 'pointer', borderRadius: 2,
+};
+const applyBtnDisabledStyle = {
+  background: '#B0B0B0', cursor: 'not-allowed',
+};
+const cancelBtnStyle = {
+  background: '#FFFFFF', color: '#333',
+  border: '1px solid #B8B8B8', padding: '4px 12px',
+  fontSize: 11, cursor: 'pointer', borderRadius: 2,
+};
+const cancelBtnDisabledStyle = {
+  color: '#B0B0B0', borderColor: '#DDD',
+  cursor: 'not-allowed', background: '#F5F5F5',
+};
