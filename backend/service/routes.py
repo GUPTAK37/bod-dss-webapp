@@ -51,12 +51,20 @@ def me(request: Request):
 
 @router.get("/refresh-date")
 def refresh_date():
+    """Return both the latest LAST_REFRESH_DATE and the last EPISODE_START_DATE
+    ("data available until") — used by the top header."""
+    out = {"date": None, "available_until": None}
     try:
         df = run_query(*Q.q_data_refresh_date())
-        d = str(df.iloc[0, 0])[:10]
+        out["date"] = str(df.iloc[0, 0])[:10]
     except Exception as exc:  # noqa: BLE001
-        return {"date": None, "error": str(exc)}
-    return {"date": d}
+        out["error_refresh"] = str(exc)
+    try:
+        min_d, max_d, _ = date_extents()
+        out["available_until"] = max_d.isoformat()
+    except Exception as exc:  # noqa: BLE001
+        out["error_available"] = str(exc)
+    return out
 
 
 @router.get("/date-extents")
