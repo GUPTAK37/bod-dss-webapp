@@ -449,14 +449,14 @@ body, .Select-control, .Select-menu-outer, .Dropdown-control {
 }
 .section-title {
     background: #0000C9; color: white; font-weight: 600;
-    padding: 4px 12px; font-size: 12px;
+    padding: 6px 14px; font-size: 15px;
     border-bottom: 1px solid #000080;
     display: flex; align-items: center; gap: 16px;
-    min-height: 32px;
+    min-height: 36px;
 }
 .section-title-text {
     flex: 1 1 auto;
-    font-size: 12px; font-weight: 700;
+    font-size: 15px; font-weight: 700;
 }
 
 /* -- Local filters inline in the title bar (S8) -- */
