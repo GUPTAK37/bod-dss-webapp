@@ -14,6 +14,7 @@ body, .Select-control, .Select-menu-outer, .Dropdown-control {
 .app-header {
     display: flex; justify-content: space-between; align-items: center;
     padding: 6px 16px; background: #FFFFFF;
+    border-top: 4px solid #0000C9;    /* Tableau-style blue strip above header */
     border-bottom: 1px solid #DADADA;
 }
 .app-header-left {
