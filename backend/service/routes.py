@@ -51,8 +51,15 @@ def me(request: Request):
 
 @router.get("/refresh-date")
 def refresh_date():
-    """Return both the latest LAST_REFRESH_DATE and the last EPISODE_START_DATE
-    ("data available until") — used by the top header."""
+    """Return both the latest LAST_REFRESH_DATE and the "data available until"
+    date — used by the top header.
+
+    "Data available until" == MAX(PATIENT_MAX_DATE) — the last day for which
+    patient-level facts exist. This matches the Tableau workbook's header
+    (~= EPISODE_START_DATE + 30-day window). It is NOT the same as
+    MAX(EPISODE_START_DATE), which is ~30 days earlier and used by the
+    filter month picker.
+    """
     out = {"date": None, "available_until": None}
     try:
         df = run_query(*Q.q_data_refresh_date())
@@ -60,8 +67,16 @@ def refresh_date():
     except Exception as exc:  # noqa: BLE001
         out["error_refresh"] = str(exc)
     try:
-        min_d, max_d, _ = date_extents()
-        out["available_until"] = max_d.isoformat()
+        from bod_app.data.snowflake_client import FACT_TABLE
+        df = run_query(
+            f"SELECT MAX(PATIENT_MAX_DATE)::date AS D "
+            f"FROM {FACT_TABLE} "
+            f"WHERE MEDICAL_PATIENT_COHORT_FLAG = 1 "
+            f"  AND INCOMPLETE_EPISODE_FLAG = 0 "
+            f"  AND EPISODE_PER_QUARTER_FLAG = '1' "
+            f"  AND HIGH_RISK_CONDITION = 'ALL HR CONDITIONS'"
+        )
+        out["available_until"] = str(df.iloc[0, 0])[:10]
     except Exception as exc:  # noqa: BLE001
         out["error_available"] = str(exc)
     return out
