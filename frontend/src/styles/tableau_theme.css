@@ -23,7 +23,7 @@ body, .Select-control, .Select-menu-outer, .Dropdown-control {
     height: 34px; width: auto; display: block;
 }
 .app-title {
-    color: #0000C9; font-weight: 700; font-size: 18px;
+    color: #0000C9; font-weight: 700; font-size: 20px;
     font-style: italic;
     letter-spacing: 0.2px;
 }
