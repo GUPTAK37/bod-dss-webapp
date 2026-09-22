@@ -40,7 +40,7 @@ body, .Select-control, .Select-menu-outer, .Dropdown-control {
     color: #333;
 }
 .app-header-date-value {
-    color: #C00000;
+    color: #0000C9;
 }
 /* Legacy pill kept for backwards compat with any residual DOM. */
 .header-refresh {
