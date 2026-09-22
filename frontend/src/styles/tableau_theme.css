@@ -1,6 +1,6 @@
-/* ============================================================
+﻿/* ============================================================
    Tableau-close styling for the Covid-19 QCIT BoD webapp.
-   Trebuchet MS · #0000C9 for section title bars · white cards.
+   Trebuchet MS Â· #0000C9 for section title bars Â· white cards.
    ============================================================ */
 
 body, .Select-control, .Select-menu-outer, .Dropdown-control {
@@ -30,7 +30,7 @@ body, .Select-control, .Select-menu-outer, .Dropdown-control {
 .app-header-right {
     display: flex; flex-direction: column; align-items: flex-end;
     gap: 2px;
-    font-size: 11px; font-weight: 600;
+    font-size: 12px; font-weight: 600;
     text-align: right;
 }
 .app-header-date {
@@ -44,7 +44,7 @@ body, .Select-control, .Select-menu-outer, .Dropdown-control {
 }
 /* Legacy pill kept for backwards compat with any residual DOM. */
 .header-refresh {
-    color: #C00000; font-size: 10px; font-weight: 600;
+    color: #C00000; font-size: 11px; font-weight: 600;
     text-align: right;
 }
 
@@ -75,7 +75,7 @@ body, .Select-control, .Select-menu-outer, .Dropdown-control {
 }
 .param-group-title {
     /* Plain in-flow label at the top of the box; border remains unbroken. */
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
     color: #333;
     letter-spacing: 0.3px;
@@ -95,7 +95,7 @@ body, .Select-control, .Select-menu-outer, .Dropdown-control {
     min-width: 0;
 }
 .param-label {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 600;
     color: #333;
     margin-bottom: 2px;
@@ -104,7 +104,7 @@ body, .Select-control, .Select-menu-outer, .Dropdown-control {
 
 /* ---- Compact dropdown styling ---- */
 .param-dd {
-    font-size: 11px !important;
+    font-size: 12px !important;
     /* Hard-cap the height so multi-select chip lists cannot expand the row. */
     height: 26px !important;
     max-height: 26px !important;
@@ -129,27 +129,27 @@ body, .Select-control, .Select-menu-outer, .Dropdown-control {
     border: 1px solid #B8B8B8 !important;
     border-radius: 2px !important;
     background: #FFFFFF !important;
-    font-size: 11px !important;
+    font-size: 12px !important;
 }
 .param-dd .Select-value,
 .param-dd .Select-placeholder,
 .param-dd .Select-input {
     line-height: 24px !important;
     height: 24px !important;
-    font-size: 11px !important;
+    font-size: 12px !important;
     padding-left: 6px !important;
 }
 .param-dd .Select-arrow-zone { padding-right: 4px !important; }
 .param-dd .Select--multi .Select-value {
     background: #F0F0F5 !important; color: #333 !important;
     border: 1px solid #DADADA !important;
-    font-size: 10px !important;
+    font-size: 11px !important;
     margin: 2px 0 0 2px !important;
     padding: 0 4px !important; line-height: 18px !important;
 }
-.param-dd .Select-menu-outer { font-size: 11px !important; }
+.param-dd .Select-menu-outer { font-size: 12px !important; }
 
-/* react-select v3+ (Dash 2+/4+) — style container and children generically.
+/* react-select v3+ (Dash 2+/4+) â€” style container and children generically.
    Cover both camelCase (singleValue, valueContainer) and hyphenated
    (single-value, value-container) class-name conventions used by
    different Dash / react-select versions. */
@@ -160,7 +160,7 @@ body, .Select-control, .Select-menu-outer, .Dropdown-control {
     border: 1px solid #B8B8B8 !important;
     border-radius: 2px !important;
     background: #FFFFFF !important;
-    font-size: 11px !important;
+    font-size: 12px !important;
     box-shadow: none !important;
     cursor: pointer;
     overflow: hidden !important;
@@ -176,11 +176,11 @@ body, .Select-control, .Select-menu-outer, .Dropdown-control {
     flex-wrap: nowrap !important;
     overflow: hidden !important;
 }
-.param-dd [class*="placeholder"] { color: #999 !important; font-size: 11px !important; }
+.param-dd [class*="placeholder"] { color: #999 !important; font-size: 12px !important; }
 .param-dd [class*="singleValue"],
 .param-dd [class*="single-value"] {
     color: #333 !important;
-    font-size: 11px !important;
+    font-size: 12px !important;
     line-height: 22px !important;
     max-width: 100% !important;
     overflow: hidden;
@@ -194,15 +194,15 @@ body, .Select-control, .Select-menu-outer, .Dropdown-control {
 }
 .param-dd [class*="multiValue"] [class*="Label"],
 .param-dd [class*="multi-value"] [class*="label"] {
-    font-size: 10px !important; padding: 0 4px !important; color: #333 !important;
+    font-size: 11px !important; padding: 0 4px !important; color: #333 !important;
 }
 .param-dd [class*="indicatorSeparator"],
 .param-dd [class*="indicator-separator"] { display: none !important; }
 .param-dd [class*="indicatorContainer"],
 .param-dd [class*="IndicatorContainer"],
 .param-dd [class*="indicator-container"] { padding: 3px 6px !important; }
-.param-dd [class*="menu"] { font-size: 11px !important; z-index: 30; }
-.param-dd input { font-size: 11px !important; }
+.param-dd [class*="menu"] { font-size: 12px !important; z-index: 30; }
+.param-dd input { font-size: 12px !important; }
 
 /* ============================================================
    Tableau-style multi-select filter (`_ms` helper)
@@ -223,7 +223,7 @@ body, .Select-control, .Select-menu-outer, .Dropdown-control {
     height: 26px;
     padding: 0 6px 0 8px;
     font-family: inherit;
-    font-size: 11px;
+    font-size: 12px;
     color: #333;
     background: #FFFFFF;
     border: 1px solid #C4C4C4;
@@ -244,13 +244,13 @@ body, .Select-control, .Select-menu-outer, .Dropdown-control {
 .ms-btn-arrow {
     flex: 0 0 auto;
     margin-left: 4px;
-    color: #666; font-size: 10px;
+    color: #666; font-size: 11px;
 }
 
 /* Popover (dbc) shell.
    NB: `dbc.Popover(className="ms-pop", ...)` puts BOTH classes on the same
    element, so the correct selector is `.ms-pop.popover` (no space). The
-   scroll must live on ONE inner element only — otherwise nested overflow
+   scroll must live on ONE inner element only â€” otherwise nested overflow
    containers each grow a scrollbar. */
 .ms-pop {
     max-width: none !important;
@@ -289,11 +289,11 @@ body, .Select-control, .Select-menu-outer, .Dropdown-control {
     max-height: 300px !important;
     overflow-y: auto !important;
     overflow-x: hidden !important;
-    font-size: 11px;
+    font-size: 12px;
     color: #333;
 }
 
-/* Sticky search input — stays pinned at the top of the popover body while
+/* Sticky search input â€” stays pinned at the top of the popover body while
    the checklist scrolls underneath. */
 .ms-search {
     position: sticky !important;
@@ -305,7 +305,7 @@ body, .Select-control, .Select-menu-outer, .Dropdown-control {
     height: 24px;
     padding: 0 6px;
     margin: 0 0 4px 0;
-    font-size: 11px;
+    font-size: 12px;
     color: #333;
     border: 1px solid #C4C4C4;
     border-radius: 2px;
@@ -343,7 +343,7 @@ body, .Select-control, .Select-menu-outer, .Dropdown-control {
     flex: 0 0 auto;
 }
 
-/* First option ((All)) — separate it visually */
+/* First option ((All)) â€” separate it visually */
 .ms-chk label:first-of-type,
 .ms-chk .ms-checkbox-label:first-of-type {
     font-weight: 600;
@@ -357,12 +357,12 @@ body, .Select-control, .Select-menu-outer, .Dropdown-control {
     background: #FFFFFF;
     color: #333;
     height: 22px;
-    font-size: 11px;
+    font-size: 12px;
 }
 .ms-btn.local-filter-btn .ms-btn-text  { color: #333; }
 .ms-btn.local-filter-btn .ms-btn-arrow { color: #666; }
 
-/* Single-select radio rows inside the popover — same visual language as
+/* Single-select radio rows inside the popover â€” same visual language as
    the multi-select checkbox rows so all filters feel identical. */
 .ss-radio label,
 .ss-radio .ms-checkbox-label {
@@ -374,7 +374,7 @@ body, .Select-control, .Select-menu-outer, .Dropdown-control {
     line-height: 1.4;
     cursor: pointer;
     border-radius: 2px;
-    font-size: 11px;
+    font-size: 12px;
     color: #333;
 }
 .ss-radio label:hover,
@@ -386,7 +386,7 @@ body, .Select-control, .Select-menu-outer, .Dropdown-control {
     flex: 0 0 auto;
 }
 
-/* Search input inside popover — filters visible checklist rows without
+/* Search input inside popover â€” filters visible checklist rows without
    affecting the underlying selection state. */
 .ms-search {
     box-sizing: border-box;
@@ -394,7 +394,7 @@ body, .Select-control, .Select-menu-outer, .Dropdown-control {
     height: 22px;
     padding: 0 6px;
     margin-bottom: 4px;
-    font-size: 11px;
+    font-size: 12px;
     color: #333;
     background: #FFFFFF;
     border: 1px solid #C4C4C4;
@@ -403,7 +403,7 @@ body, .Select-control, .Select-menu-outer, .Dropdown-control {
 }
 .ms-search:focus { border-color: #0000C9; }
 
-/* Legacy .dd-multi-summary / .dd-wrap CSS removed — the Tableau-style
+/* Legacy .dd-multi-summary / .dd-wrap CSS removed â€” the Tableau-style
    filter is now the `_ms` popover above. */
 
 
@@ -411,7 +411,7 @@ body, .Select-control, .Select-menu-outer, .Dropdown-control {
 .dd-summary-text {
     padding: 0 6px;
     color: #333;
-    font-size: 11px;
+    font-size: 12px;
     font-style: italic;
     display: flex;
     align-items: center;
@@ -426,7 +426,7 @@ body, .Select-control, .Select-menu-outer, .Dropdown-control {
 }
 .apply-btn {
     background: #0000C9; color: white; border: none;
-    padding: 6px 12px; font-size: 11px; font-weight: 700;
+    padding: 6px 12px; font-size: 12px; font-weight: 700;
     border-radius: 2px; cursor: pointer;
     letter-spacing: 0.3px;
 }
@@ -478,7 +478,7 @@ body, .Select-control, .Select-menu-outer, .Dropdown-control {
 .section-local-filters-inline .param-cell > .local-filter-label,
 .section-local-filters-inline .param-cell > .param-label {
     color: #FFFFFF;
-    font-size: 10.5px; font-weight: 500;
+    font-size: 11.5px; font-weight: 500;
     text-transform: none; letter-spacing: 0.2px;
     margin: 0; white-space: nowrap;
     line-height: 22px;
@@ -517,7 +517,7 @@ body, .Select-control, .Select-menu-outer, .Dropdown-control {
 .section-local-filters-inline .local-filter-dd [class*="singleValue"],
 .section-local-filters-inline .local-filter-dd [class*="single-value"] {
     color: #333 !important;
-    font-size: 11px !important;
+    font-size: 12px !important;
     line-height: 22px !important;
 }
 .section-local-filters-inline .local-filter-dd [class*="multiValue"],
@@ -541,7 +541,7 @@ body, .Select-control, .Select-menu-outer, .Dropdown-control {
     padding: 8px 14px; background: #FFFFFF;
 }
 
-/* -- Local filter row (S8/S9) — mirrors Tableau's per-worksheet filter shelf -- */
+/* -- Local filter row (S8/S9) â€” mirrors Tableau's per-worksheet filter shelf -- */
 .section-local-filters {
     display: flex;
     gap: 16px;
@@ -557,11 +557,11 @@ body, .Select-control, .Select-menu-outer, .Dropdown-control {
     min-width: 160px;
 }
 .local-filter-label {
-    font-size: 10px; font-weight: 700; color: #333;
+    font-size: 11px; font-weight: 700; color: #333;
     margin-bottom: 3px; letter-spacing: 0.3px;
 }
-.local-filter-dd { font-size: 11px !important; }
-.section-sub { font-size: 11px; color: #333; text-align: center; }
+.local-filter-dd { font-size: 12px !important; }
+.section-sub { font-size: 12px; color: #333; text-align: center; }
 .section-sub-strong { font-weight: 700; color: #333; }
 .section-loading { padding: 0; min-height: 0; }
 
@@ -577,7 +577,7 @@ body, .Select-control, .Select-menu-outer, .Dropdown-control {
 }
 .legend-item {
     display: flex; align-items: center; gap: 6px;
-    font-size: 11px; color: #333; font-family: "Trebuchet MS", Trebuchet, Arial, sans-serif;
+    font-size: 12px; color: #333; font-family: "Trebuchet MS", Trebuchet, Arial, sans-serif;
 }
 .legend-swatch {
     display: inline-block; width: 14px; height: 14px; border-radius: 2px;
@@ -642,5 +642,5 @@ body, .Select-control, .Select-menu-outer, .Dropdown-control {
 .bod-table td.reference-col-cell {
     background: #D9D9D9 !important; font-weight: 600;
 }
-.empty-note { padding: 12px; font-size: 11px; color: #888; }
-.err { padding: 8px; color: #C00000; font-size: 11px; }
+.empty-note { padding: 12px; font-size: 12px; color: #888; }
+.err { padding: 8px; color: #C00000; font-size: 12px; }
