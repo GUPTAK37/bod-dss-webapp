@@ -66,29 +66,21 @@ body, .Select-control, .Select-menu-outer, .Dropdown-control {
     position: relative;
     border: 1px dashed #57A857;   /* dashed green like Tableau */
     border-radius: 0;
-    padding: 18px 8px 6px 8px;    /* extra top-padding so fields don't crowd the title */
+    padding: 4px 8px 6px 10px;
     background: #FFFFFF;
+    /* Title flows above the body inside the box, no overlap with the border. */
     display: flex;
-    gap: 8px;
-    align-items: flex-end;
+    flex-direction: column;
+    gap: 2px;
 }
 .param-group-title {
-    position: absolute;
-    /* Sit ON the dashed border. `top: -7px` places the title's vertical
-       centre on the border line (half of ~14px line-height). The wider
-       horizontal padding + solid white background creates the "notch" so
-       the dashes visibly break around the label — matching Tableau. */
-    top: -7px;
-    left: 10px;
-    background: #FFFFFF;
-    padding: 0 8px;
+    /* Plain in-flow label at the top of the box; border remains unbroken. */
     font-size: 11px;
     font-weight: 700;
     color: #333;
     letter-spacing: 0.3px;
-    text-transform: none;
     line-height: 14px;
-    z-index: 2;
+    margin-bottom: 2px;
 }
 .param-group-body {
     display: flex;
