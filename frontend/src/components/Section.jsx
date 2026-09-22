@@ -9,7 +9,7 @@ import { fetchSection } from '../api';
  * header pills (Time Period / Window / #Episodes), Plotly chart, HTML table.
  * Fires POST /api/section/<id> whenever `filtersVersion` changes.
  */
-export default function Section({ config, filters, filtersVersion, options, hrDyn, setFilters, onLoadStart, onLoadEnd }) {
+export default function Section({ config, filters, filtersVersion, options, hrDyn, setFilters, applyFilters, onLoadStart, onLoadEnd }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -40,6 +40,7 @@ export default function Section({ config, filters, filtersVersion, options, hrDy
               kind={config.localFilters}
               filters={filters}
               setFilters={setFilters}
+              applyFilters={applyFilters}
               options={options}
               hrDyn={hrDyn}
             />
