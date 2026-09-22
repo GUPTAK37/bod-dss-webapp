@@ -28,19 +28,29 @@ body, .Select-control, .Select-menu-outer, .Dropdown-control {
     letter-spacing: 0.2px;
 }
 .app-header-right {
-    display: flex; flex-direction: column; align-items: flex-end;
-    gap: 2px;
+    display: grid;
+    grid-template-columns: max-content max-content;
+    column-gap: 6px;
+    row-gap: 2px;
+    justify-content: end;
+    align-items: baseline;
     font-size: 12px; font-weight: 600;
-    text-align: right;
 }
 .app-header-date {
-    display: flex; gap: 4px; align-items: baseline;
+    /* Let this row's label + value participate directly in the parent
+       grid so all labels align on the right (colons stacked) and all
+       dates align on the left. */
+    display: contents;
 }
 .app-header-date-label {
     color: #333;
+    text-align: right;
+    white-space: nowrap;
 }
 .app-header-date-value {
     color: #0000C9;
+    text-align: left;
+    white-space: nowrap;
 }
 /* Legacy pill kept for backwards compat with any residual DOM. */
 .header-refresh {
