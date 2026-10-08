@@ -34,8 +34,8 @@ class BoDFilters:
     granularity: Literal["1", "2", "3", "4"] = "3"
     # Granularity Value — the actual REGION/STATE/MSA values the user picked.
     granularity_value: list[str] = field(default_factory=list)
-    start_month: date = date(2025, 8, 1)
-    end_month: date = date(2026, 7, 1)
+    start_month: date = date(2025, 9, 1)
+    end_month: date = date(2026, 8, 1)
     time_level: Literal["month", "quarter", "year"] = "quarter"
     reference_line: Literal["Yes", "No"] = "No"
     # Multi-select. Empty list == "All HR Conditions" (no HR filter applied).
