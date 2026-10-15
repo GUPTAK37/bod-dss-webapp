@@ -31,11 +31,26 @@ export default function MultiSelect({
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [draft, setDraft] = useState(value || []);
+  const [anchor, setAnchor] = useState('left');   // 'left' | 'right'
   const ref = useRef(null);
+  const btnRef = useRef(null);
 
-  // Whenever the popover opens, snapshot the currently-committed value.
+  // Whenever the popover opens, snapshot the currently-committed value AND
+  // decide which side to anchor the popover to so it never overflows the
+  // viewport. Default is left-anchored (opens rightward from the button);
+  // flip to right-anchored (opens leftward) when the button is too close
+  // to the right edge.
   useEffect(() => {
-    if (open) setDraft(value || []);
+    if (!open) return;
+    setDraft(value || []);
+    const btn = btnRef.current;
+    if (!btn) return;
+    const rect = btn.getBoundingClientRect();
+    const POPOVER_WIDTH = 240;          // matches popStyle.minWidth + some slack
+    const SAFETY = 8;                   // keep a small gap from the window edge
+    const willOverflow =
+      rect.left + POPOVER_WIDTH + SAFETY > window.innerWidth;
+    setAnchor(willOverflow ? 'right' : 'left');
   }, [open, value]);
 
   // Close on outside click (treated as Cancel — draft is discarded).
@@ -115,6 +130,7 @@ export default function MultiSelect({
       <div className={labelClass}>{label}</div>
       <div className="ms-cell" style={{ position: 'relative' }}>
         <button
+          ref={btnRef}
           type="button"
           className={`ms-btn ${className}`.trim()}
           onClick={() => setOpen((o) => !o)}
@@ -124,7 +140,10 @@ export default function MultiSelect({
           <span className="ms-btn-arrow">&#9662;</span>
         </button>
         {open && (
-          <div className="ms-pop" style={popStyle}>
+          <div className="ms-pop"
+               style={anchor === 'right'
+                 ? { ...popStyle, left: 'auto', right: 0 }
+                 : popStyle}>
             <div className="ms-body" style={bodyStyle}>
               {useSearch && (
                 <input
