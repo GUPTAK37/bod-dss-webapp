@@ -55,10 +55,17 @@ def _fu_predicate(f: BoDFilters) -> str:
     When `follow_up_visit_types` is set, narrows the definition to those
     visit types (whitelisted against the VISIT_TYPES domain so values can
     be inlined safely without threading binds through every call site).
+
+    Sentinel semantics (matching MultiSelect widget):
+      []                       → (All) — default: any non-'NO VISIT' in window
+      ['__NONE__']             → match nothing (user explicitly deselected all)
+      ['TYPE_A', 'TYPE_B', ..] → NO_VISIT_* IN (...) AND window = 1
     """
     nv = no_visit_col(f)
     win = encounter_window_col(f)
     types = getattr(f, "follow_up_visit_types", None) or []
+    if "__NONE__" in types:
+        return "FALSE"
     allowed = {v for v in VISIT_TYPES if v != "NO VISIT"}
     types = [v for v in types if v in allowed]
     if types:
