@@ -66,7 +66,10 @@ def _fu_predicate(f: BoDFilters) -> str:
     types = getattr(f, "follow_up_visit_types", None) or []
     if "__NONE__" in types:
         return "FALSE"
-    allowed = {v for v in VISIT_TYPES if v != "NO VISIT"}
+    # VISIT_TYPES includes 'NO VISIT' so the user can pick it explicitly if they
+    # want to count "no follow-up" rows as follow-up (unusual, but mirrors
+    # Tableau's parity — the dropdown surfaces every NO_VISIT_30 value).
+    allowed = set(VISIT_TYPES)
     types = [v for v in types if v in allowed]
     if types:
         in_list = ", ".join(f"'{v}'" for v in types)

@@ -136,7 +136,7 @@ def filter_options():
             "f-specialty":        domain("HCP_PRIMARY_SPECIALTY", expr=PROVIDER_PRIMARY_SPECIALTY_EXPR),
             "f-area":             domain("AREA_TYPE"),
             "s8-visit-filter":    [v for v in domain("NO_VISIT_30") if v != "NO VISIT"],
-            "f-follow-up-visit":  [v for v in domain("NO_VISIT_30") if v != "NO VISIT"],
+            "f-follow-up-visit":  domain("NO_VISIT_30"),
             "s10-visit-filter":   [v for v in domain("VISIT_FILTER_COVID") if v and v != "Redundant"],
             "s8-hr-domain":       [v for v in domain("HIGH_RISK_CONDITION")
                                    if v not in ("ALL HR CONDITIONS", "NO HIGH RISK CONDITION")],
@@ -175,9 +175,22 @@ def hr_top7(body: Dict[str, Any]):
     }
 
 
+import logging
+
+log = logging.getLogger("backend.service.routes")
+
 # ---------- Per-section chart + table --------------------------------------
 
 @router.post("/section/{sid}")
 def section(sid: str, body: Dict[str, Any]):
     f = from_payload(body)
+    # Diagnostic — log the filter actually used by the SQL builder for this
+    # section. Grep the DSS webapp backend logs for `[fu-filter]` to confirm
+    # the Follow-up Visit selection flows end-to-end.
+    log.info(
+        "[fu-filter] sid=%s payload=%r resolved=%r",
+        sid,
+        body.get("follow_up_visit_types"),
+        getattr(f, "follow_up_visit_types", "<missing attr>"),
+    )
     return render_section(sid, f)
