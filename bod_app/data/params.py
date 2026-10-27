@@ -41,6 +41,13 @@ class BoDFilters:
     # Multi-select. Empty list == "All HR Conditions" (no HR filter applied).
     hr_condition: list[str] = field(default_factory=list)
 
+    # Global "Follow-up Visit" filter (multi-select against VISIT_TYPES, minus
+    # the sentinel 'NO VISIT'). When empty the follow-up predicate falls back
+    # to "any non-'NO VISIT' encounter inside the window" — identical to the
+    # original behaviour. When non-empty it narrows the follow-up definition
+    # to the selected visit types for every chart (S1-S9).
+    follow_up_visit_types: list[str] = field(default_factory=list)
+
     # Demographic filters (multi-select). Empty list == no restriction.
     age_group: list[str] = field(default_factory=list)
     patient_gender: list[str] = field(default_factory=list)

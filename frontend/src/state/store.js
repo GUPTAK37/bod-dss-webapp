@@ -9,6 +9,7 @@ export const DEFAULT_FILTERS = {
   time_level: 'quarter',
   reference_line: 'No',
   hr_condition: [],
+  follow_up_visit_types: [],
   age_group: [],
   patient_gender: [],
   payer_type: [],

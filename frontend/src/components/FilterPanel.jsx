@@ -68,6 +68,8 @@ export default function FilterPanel({ filters, setFilters, applyFilters, options
             options={options['p-granularity-value'] || []} {...bindMulti('granularity_value')} />
           <SingleSelect id="p-encounter-window" label="Follow-up Visit Window"
             options={ENCOUNTER_WINDOWS} {...bindSingle('encounter_window')} />
+          <MultiSelect  id="f-follow-up-visit"  label="Follow-up Visit"
+            options={options['f-follow-up-visit'] || []} {...bindMulti('follow_up_visit_types')} />
         </ParamGroup>
         <ParamGroup title="Patient Parameters" flex={4}>
           <MultiSelect id="f-age-group"    label="Age Group"

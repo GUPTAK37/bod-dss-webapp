@@ -136,6 +136,7 @@ def filter_options():
             "f-specialty":        domain("HCP_PRIMARY_SPECIALTY", expr=PROVIDER_PRIMARY_SPECIALTY_EXPR),
             "f-area":             domain("AREA_TYPE"),
             "s8-visit-filter":    [v for v in domain("NO_VISIT_30") if v != "NO VISIT"],
+            "f-follow-up-visit":  [v for v in domain("NO_VISIT_30") if v != "NO VISIT"],
             "s10-visit-filter":   [v for v in domain("VISIT_FILTER_COVID") if v and v != "Redundant"],
             "s8-hr-domain":       [v for v in domain("HIGH_RISK_CONDITION")
                                    if v not in ("ALL HR CONDITIONS", "NO HIGH RISK CONDITION")],

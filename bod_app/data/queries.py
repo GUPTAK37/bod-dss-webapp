@@ -22,6 +22,7 @@ from typing import Any
 
 from .params import (
     BoDFilters,
+    VISIT_TYPES,
     encounter_window_col,
     no_visit_col,
     time_bucket,
@@ -49,8 +50,21 @@ def q_headline_counts(f: BoDFilters) -> tuple[str, dict[str, Any]]:
 # ==========================================================================
 
 def _fu_predicate(f: BoDFilters) -> str:
-    """SQL fragment that is TRUE for rows classified as a Follow-up Visit."""
-    return f"{no_visit_col(f)} <> 'NO VISIT' AND {encounter_window_col(f)} = 1"
+    """SQL fragment that is TRUE for rows classified as a Follow-up Visit.
+
+    When `follow_up_visit_types` is set, narrows the definition to those
+    visit types (whitelisted against the VISIT_TYPES domain so values can
+    be inlined safely without threading binds through every call site).
+    """
+    nv = no_visit_col(f)
+    win = encounter_window_col(f)
+    types = getattr(f, "follow_up_visit_types", None) or []
+    allowed = {v for v in VISIT_TYPES if v != "NO VISIT"}
+    types = [v for v in types if v in allowed]
+    if types:
+        in_list = ", ".join(f"'{v}'" for v in types)
+        return f"{nv} IN ({in_list}) AND {win} = 1"
+    return f"{nv} <> 'NO VISIT' AND {win} = 1"
 
 
 def _episode_cte(f: BoDFilters, group_by_cohort: bool, group_by_bucket: bool
@@ -198,7 +212,7 @@ def _visit_mix_query(f: BoDFilters, group_cohort: bool, group_bucket: bool
             SELECT
                 {bar_select},
                 COUNT(DISTINCT EPISODE_ID) AS TOTAL_EPISODES,
-                COUNT(DISTINCT CASE WHEN {nv} <> 'NO VISIT' AND {win} = 1
+                COUNT(DISTINCT CASE WHEN {_fu_predicate(f)}
                                      THEN ENCOUNTER_KEY END) AS TOTAL_FOLLOWUP_VISITS
             FROM {FACT_TABLE}
             {where}
@@ -211,8 +225,7 @@ def _visit_mix_query(f: BoDFilters, group_cohort: bool, group_bucket: bool
                 COUNT(DISTINCT ENCOUNTER_KEY) AS N_VISITS
             FROM {FACT_TABLE}
             {where}
-              AND {nv} <> 'NO VISIT'
-              AND {win} = 1
+              AND ({_fu_predicate(f)})
             GROUP BY {all_group_positions}
         )
         SELECT v.*, t.TOTAL_EPISODES, t.TOTAL_FOLLOWUP_VISITS
@@ -330,7 +343,7 @@ def q_s8_hr_conditions(f: BoDFilters) -> tuple[str, dict[str, Any]]:
               AND HIGH_RISK_CONDITION IS NOT NULL
               AND HIGH_RISK_CONDITION NOT IN ('NO HIGH RISK CONDITION','ALL HR CONDITIONS')
               {vt_pred}
-              AND {nv} <> 'NO VISIT' AND {win} = 1
+              AND ({_fu_predicate(f)})
             GROUP BY HIGH_RISK_CONDITION
             ORDER BY COUNT(DISTINCT ENCOUNTER_KEY) DESC
             LIMIT {top_n}
@@ -338,9 +351,9 @@ def q_s8_hr_conditions(f: BoDFilters) -> tuple[str, dict[str, Any]]:
         reference AS (
             SELECT 'REFERENCE'::VARCHAR AS HIGH_RISK_CONDITION,
                    0 AS ORD,
-                   COUNT(DISTINCT CASE WHEN {nv} <> 'NO VISIT' AND {win} = 1 {vt_pred}
+                   COUNT(DISTINCT CASE WHEN ({_fu_predicate(f)}) {vt_pred}
                                         THEN EPISODE_ID END)    AS N_EPISODES_WITH_FU,
-                   COUNT(DISTINCT CASE WHEN {nv} <> 'NO VISIT' AND {win} = 1 {vt_pred}
+                   COUNT(DISTINCT CASE WHEN ({_fu_predicate(f)}) {vt_pred}
                                         THEN ENCOUNTER_KEY END) AS N_FOLLOWUP_VISITS
             FROM {FACT_TABLE}
             {where}
@@ -348,9 +361,9 @@ def q_s8_hr_conditions(f: BoDFilters) -> tuple[str, dict[str, Any]]:
         per_hr AS (
             SELECT HIGH_RISK_CONDITION,
                    1 AS ORD,
-                   COUNT(DISTINCT CASE WHEN {nv} <> 'NO VISIT' AND {win} = 1 {vt_pred}
+                   COUNT(DISTINCT CASE WHEN ({_fu_predicate(f)}) {vt_pred}
                                         THEN EPISODE_ID END)    AS N_EPISODES_WITH_FU,
-                   COUNT(DISTINCT CASE WHEN {nv} <> 'NO VISIT' AND {win} = 1 {vt_pred}
+                   COUNT(DISTINCT CASE WHEN ({_fu_predicate(f)}) {vt_pred}
                                         THEN ENCOUNTER_KEY END) AS N_FOLLOWUP_VISITS
             FROM {FACT_TABLE}
             {where}
@@ -394,7 +407,7 @@ def q_s8_top7_list(f: BoDFilters) -> tuple[str, dict[str, Any]]:
           AND HIGH_RISK_CONDITION IS NOT NULL
           AND HIGH_RISK_CONDITION NOT IN ('NO HIGH RISK CONDITION','ALL HR CONDITIONS')
           {vt_pred}
-          AND {nv} <> 'NO VISIT' AND {win} = 1
+          AND ({_fu_predicate(f)})
         GROUP BY HIGH_RISK_CONDITION
         ORDER BY N DESC
         LIMIT {top_n}
@@ -453,7 +466,7 @@ def q_s9_hr_conditions_by_cohort(f: BoDFilters) -> tuple[str, dict[str, Any]]:
               AND HIGH_RISK_CONDITION IS NOT NULL
               AND HIGH_RISK_CONDITION NOT IN ('NO HIGH RISK CONDITION','ALL HR CONDITIONS')
               {vt_pred}
-              AND {nv} <> 'NO VISIT' AND {win} = 1
+              AND ({_fu_predicate(f)})
             GROUP BY HIGH_RISK_CONDITION
             ORDER BY COUNT(DISTINCT ENCOUNTER_KEY) DESC
             LIMIT {top_n}
@@ -462,9 +475,9 @@ def q_s9_hr_conditions_by_cohort(f: BoDFilters) -> tuple[str, dict[str, Any]]:
             SELECT 'REFERENCE'::VARCHAR AS HIGH_RISK_CONDITION,
                    0 AS ORD,
                    {cohort_expr} AS COHORT,
-                   COUNT(DISTINCT CASE WHEN {nv} <> 'NO VISIT' AND {win} = 1 {vt_pred}
+                   COUNT(DISTINCT CASE WHEN ({_fu_predicate(f)}) {vt_pred}
                                         THEN EPISODE_ID END)    AS N_EPISODES_WITH_FU,
-                   COUNT(DISTINCT CASE WHEN {nv} <> 'NO VISIT' AND {win} = 1 {vt_pred}
+                   COUNT(DISTINCT CASE WHEN ({_fu_predicate(f)}) {vt_pred}
                                         THEN ENCOUNTER_KEY END) AS N_FOLLOWUP_VISITS
             FROM {FACT_TABLE}
             {where}
@@ -474,9 +487,9 @@ def q_s9_hr_conditions_by_cohort(f: BoDFilters) -> tuple[str, dict[str, Any]]:
             SELECT HIGH_RISK_CONDITION,
                    1 AS ORD,
                    {cohort_expr} AS COHORT,
-                   COUNT(DISTINCT CASE WHEN {nv} <> 'NO VISIT' AND {win} = 1 {vt_pred}
+                   COUNT(DISTINCT CASE WHEN ({_fu_predicate(f)}) {vt_pred}
                                         THEN EPISODE_ID END)    AS N_EPISODES_WITH_FU,
-                   COUNT(DISTINCT CASE WHEN {nv} <> 'NO VISIT' AND {win} = 1 {vt_pred}
+                   COUNT(DISTINCT CASE WHEN ({_fu_predicate(f)}) {vt_pred}
                                         THEN ENCOUNTER_KEY END) AS N_FOLLOWUP_VISITS
             FROM {FACT_TABLE}
             {where}
